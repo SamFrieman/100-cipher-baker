@@ -1,202 +1,303 @@
-// Main application logic and UI handlers
+// Main application logic with search functionality and security
 
-// Load an example into the decode section
+// Initialize the application
+document.addEventListener('DOMContentLoaded', function() {
+    populateCipherSelects();
+    setupSearchFunctionality();
+});
+
+// Populate both encode and decode cipher dropdowns
+function populateCipherSelects() {
+    const decodeSelect = document.getElementById('decodeCipher');
+    const encodeSelect = document.getElementById('encodeCipher');
+    
+    // Clear existing options
+    decodeSelect.innerHTML = '';
+    encodeSelect.innerHTML = '';
+    
+    // Group ciphers by category for better organization
+    const categories = {};
+    CipherRegistry.ciphers.forEach(cipher => {
+        if (!categories[cipher.category]) {
+            categories[cipher.category] = [];
+        }
+        categories[cipher.category].push(cipher);
+    });
+    
+    // Add options grouped by category
+    Object.keys(categories).sort().forEach(category => {
+        // Decode dropdown only gets bidirectional ciphers
+        const decodeGroup = document.createElement('optgroup');
+        decodeGroup.label = category;
+        categories[category].filter(c => c.bidirectional).forEach(cipher => {
+            const option = document.createElement('option');
+            option.value = cipher.id;
+            option.textContent = cipher.name;
+            decodeGroup.appendChild(option);
+        });
+        if (decodeGroup.children.length > 0) {
+            decodeSelect.appendChild(decodeGroup);
+        }
+        
+        // Encode dropdown gets all ciphers
+        const encodeGroup = document.createElement('optgroup');
+        encodeGroup.label = category;
+        categories[category].forEach(cipher => {
+            const option = document.createElement('option');
+            option.value = cipher.id;
+            option.textContent = cipher.name;
+            encodeGroup.appendChild(option);
+        });
+        encodeSelect.appendChild(encodeGroup);
+    });
+}
+
+// Setup search functionality for cipher dropdowns
+function setupSearchFunctionality() {
+    const decodeSearch = document.getElementById('decodeSearch');
+    const encodeSearch = document.getElementById('encodeSearch');
+    const decodeSelect = document.getElementById('decodeCipher');
+    const encodeSelect = document.getElementById('encodeCipher');
+    
+    // Filter decode ciphers
+    decodeSearch.addEventListener('input', function() {
+        filterCipherSelect(this.value.toLowerCase(), decodeSelect);
+    });
+    
+    // Filter encode ciphers
+    encodeSearch.addEventListener('input', function() {
+        filterCipherSelect(this.value.toLowerCase(), encodeSelect);
+    });
+}
+
+// Filter cipher select dropdown based on search term
+function filterCipherSelect(searchTerm, selectElement) {
+    const options = selectElement.getElementsByTagName('option');
+    const optgroups = selectElement.getElementsByTagName('optgroup');
+    
+    // Show all if search is empty
+    if (!searchTerm) {
+        Array.from(optgroups).forEach(group => group.style.display = '');
+        Array.from(options).forEach(option => option.style.display = '');
+        return;
+    }
+    
+    // Filter options
+    Array.from(options).forEach(option => {
+        const text = option.textContent.toLowerCase();
+        option.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
+    
+    // Hide empty optgroups
+    Array.from(optgroups).forEach(group => {
+        const visibleOptions = Array.from(group.getElementsByTagName('option'))
+            .some(opt => opt.style.display !== 'none');
+        group.style.display = visibleOptions ? '' : 'none';
+    });
+}
+
+// Load example into decode section
 function loadExample(index) {
+    const examples = [
+        { text: "V3JpdGUtSG9zdCAiTWFsaWNpb3VzIGNvZGUgZGV0ZWN0ZWQi", cipher: "base64" },
+        { text: "49 6e 76 6f 6b 65 2d 57 65 62 52 65 71 75 65 73 74", cipher: "hex" },
+        { text: "cmd.exe%20%2Fc%20%22whoami%22", cipher: "url" },
+        { text: "01001000 01100001 01100011 01101011", cipher: "binary" }
+    ];
+    
     const example = examples[index];
     document.getElementById('decodeInput').value = example.text;
     document.getElementById('decodeCipher').value = example.cipher;
 }
 
-// Perform decoding based on selected cipher
+// Perform decoding operation
 function performDecode() {
     const input = document.getElementById('decodeInput').value.trim();
-    const cipher = document.getElementById('decodeCipher').value;
+    const cipherId = document.getElementById('decodeCipher').value;
     
     if (!input) {
-        displayDecodeOutput('Please enter something to decode first');
+        displayDecodeOutput('Please enter text to decode');
         return;
     }
-
-    let result;
+    
     try {
-        // Route to the appropriate decoder
-        switch(cipher) {
-            case 'base64':
-                result = decodeBase64(input);
-                break;
-            case 'hex':
-                result = decodeHex(input);
-                break;
-            case 'url':
-                result = decodeURL(input);
-                break;
-            case 'rot13':
-                result = decodeROT13(input);
-                break;
-            case 'binary':
-                result = decodeBinary(input);
-                break;
-            case 'ascii':
-                result = decodeASCII(input);
-                break;
-            case 'morse':
-                result = decodeMorse(input);
-                break;
-            case 'reverse':
-                result = decodeReverse(input);
-                break;
-            case 'caesar':
-                result = decodeCaesar(input);
-                break;
-            case 'atbash':
-                result = decodeAtbash(input);
-                break;
-            default:
-                result = 'Unknown cipher type';
+        // Security check
+        securityCheck(input, 'decode');
+        
+        // Sanitize input
+        const cleanInput = sanitizeInput(input);
+        
+        // Get cipher implementation
+        const cipher = Ciphers[cipherId];
+        if (!cipher || !cipher.decode) {
+            displayDecodeOutput('Cipher not supported or decode not available');
+            return;
         }
         
+        // Perform decoding
+        const result = cipher.decode(cleanInput);
+        
+        // Sanitize and display output
+        const safeOutput = sanitizeOutput(result);
         displayDecodeOutput(result);
+        
+        // Check for threats
         checkForThreats(result);
-    } catch (e) {
-        displayDecodeOutput('Decoding failed: ' + e.message);
+        
+    } catch (error) {
+        displayDecodeOutput('Decoding failed: ' + error.message);
     }
 }
 
-// Try decoding with all available methods
+// Auto-detect cipher type by trying multiple methods
 function autoDetectDecode() {
     const input = document.getElementById('decodeInput').value.trim();
+    
     if (!input) {
-        displayDecodeOutput('Please enter something first');
+        displayDecodeOutput('Please enter text to decode');
         return;
     }
-
-    let results = '=== AUTO-DETECTION RESULTS ===\n\n';
     
-    const methods = ['base64', 'hex', 'url', 'rot13', 'binary', 'ascii', 'morse', 'reverse', 'caesar', 'atbash'];
-    
-    methods.forEach(method => {
-        try {
-            let decoded;
-            // Call the appropriate decoder
-            switch(method) {
-                case 'base64': decoded = decodeBase64(input); break;
-                case 'hex': decoded = decodeHex(input); break;
-                case 'url': decoded = decodeURL(input); break;
-                case 'rot13': decoded = decodeROT13(input); break;
-                case 'binary': decoded = decodeBinary(input); break;
-                case 'ascii': decoded = decodeASCII(input); break;
-                case 'morse': decoded = decodeMorse(input); break;
-                case 'reverse': decoded = decodeReverse(input); break;
-                case 'caesar': decoded = decodeCaesar(input); break;
-                case 'atbash': decoded = decodeAtbash(input); break;
+    try {
+        securityCheck(input, 'decode');
+        const cleanInput = sanitizeInput(input);
+        
+        let results = '=== AUTO-DETECTION RESULTS ===\n\n';
+        let foundResults = 0;
+        
+        // Try only the most common bidirectional ciphers
+        const commonCiphers = ['base64', 'hex', 'url', 'binary', 'rot13', 'decimal', 'morse', 'reverse'];
+        
+        commonCiphers.forEach(cipherId => {
+            try {
+                const cipher = Ciphers[cipherId];
+                if (cipher && cipher.decode) {
+                    const decoded = cipher.decode(cleanInput);
+                    
+                    // Only show if result contains readable ASCII
+                    if (decoded && /[\x20-\x7E]/.test(decoded)) {
+                        results += `${cipherId.toUpperCase()}:\n${decoded}\n\n`;
+                        foundResults++;
+                    }
+                }
+            } catch (e) {
+                // Skip failed decodings silently
             }
-            
-            // Only show results that contain readable ASCII characters
-            if (decoded && /[\x20-\x7E]/.test(decoded)) {
-                results += `${method.toUpperCase()}:\n${decoded}\n\n`;
-            }
-        } catch (e) {
-            // Silently skip failed decodings
+        });
+        
+        if (foundResults === 0) {
+            results = 'No readable output detected from common cipher methods.';
         }
-    });
-    
-    displayDecodeOutput(results);
+        
+        displayDecodeOutput(results);
+        
+    } catch (error) {
+        displayDecodeOutput('Auto-detection failed: ' + error.message);
+    }
 }
 
-// Perform encoding based on selected cipher
+// Perform encoding operation
 function performEncode() {
     const input = document.getElementById('encodeInput').value.trim();
-    const cipher = document.getElementById('encodeCipher').value;
+    const cipherId = document.getElementById('encodeCipher').value;
     
     if (!input) {
         displayEncodeOutput('Please enter text to encode');
         return;
     }
-
-    let result;
+    
     try {
-        // Route to the appropriate encoder
-        switch(cipher) {
-            case 'base64':
-                result = btoa(input);
-                break;
-            case 'hex':
-                result = encodeHex(input);
-                break;
-            case 'url':
-                result = encodeURIComponent(input);
-                break;
-            case 'rot13':
-                result = decodeROT13(input); // ROT13 is its own inverse
-                break;
-            case 'binary':
-                result = encodeBinary(input);
-                break;
-            case 'ascii':
-                result = encodeASCII(input);
-                break;
-            case 'morse':
-                result = encodeMorse(input);
-                break;
-            case 'reverse':
-                result = input.split('').reverse().join('');
-                break;
-            case 'caesar':
-                result = encodeCaesar(input);
-                break;
-            case 'atbash':
-                result = decodeAtbash(input); // Atbash is also its own inverse
-                break;
-            default:
-                result = 'Unknown cipher type';
+        // Security check
+        securityCheck(input, 'encode');
+        
+        // Sanitize input
+        const cleanInput = sanitizeInput(input);
+        
+        // Get cipher implementation
+        const cipher = Ciphers[cipherId];
+        if (!cipher || !cipher.encode) {
+            displayEncodeOutput('Cipher not supported');
+            return;
         }
         
+        // Perform encoding
+        const result = cipher.encode(cleanInput);
+        
+        // Sanitize and display output
+        const safeOutput = sanitizeOutput(result);
         displayEncodeOutput(result);
-    } catch (e) {
-        displayEncodeOutput('Encoding failed: ' + e.message);
+        
+    } catch (error) {
+        displayEncodeOutput('Encoding failed: ' + error.message);
     }
 }
 
-// Encode input with all available methods
+// Encode with all available methods
 function encodeAll() {
     const input = document.getElementById('encodeInput').value.trim();
+    
     if (!input) {
-        displayEncodeOutput('Please enter text first');
+        displayEncodeOutput('Please enter text to encode');
         return;
     }
-
-    let results = '=== ENCODED WITH ALL CIPHERS ===\n\n';
     
     try {
-        results += `Base64:\n${btoa(input)}\n\n`;
-        results += `Hexadecimal:\n${encodeHex(input)}\n\n`;
-        results += `URL Encoded:\n${encodeURIComponent(input)}\n\n`;
-        results += `ROT13:\n${decodeROT13(input)}\n\n`;
-        results += `Binary:\n${encodeBinary(input)}\n\n`;
-        results += `ASCII Decimal:\n${encodeASCII(input)}\n\n`;
-        results += `Morse Code:\n${encodeMorse(input)}\n\n`;
-        results += `Reversed:\n${input.split('').reverse().join('')}\n\n`;
-        results += `Caesar (shift 3):\n${encodeCaesar(input)}\n\n`;
-        results += `Atbash:\n${decodeAtbash(input)}\n\n`;
-    } catch (e) {
-        results += '\nSome encodings failed: ' + e.message;
+        securityCheck(input, 'encode');
+        const cleanInput = sanitizeInput(input);
+        
+        let results = '=== ENCODED WITH ALL CIPHERS ===\n\n';
+        
+        // Only use implemented ciphers
+        const implementedCiphers = [
+            'base64', 'base32', 'base16', 'base58', 'base85',
+            'hex', 'binary', 'octal', 'decimal',
+            'url', 'html', 'unicode',
+            'rot13', 'caesar', 'atbash', 'morse', 'reverse', 'bacon'
+        ];
+        
+        implementedCiphers.forEach(cipherId => {
+            try {
+                const cipher = Ciphers[cipherId];
+                if (cipher && cipher.encode) {
+                    const encoded = cipher.encode(cleanInput);
+                    results += `${cipherId.toUpperCase()}:\n${encoded}\n\n`;
+                }
+            } catch (e) {
+                results += `${cipherId.toUpperCase()}: Encoding failed\n\n`;
+            }
+        });
+        
+        displayEncodeOutput(results);
+        
+    } catch (error) {
+        displayEncodeOutput('Encode all failed: ' + error.message);
     }
-    
-    displayEncodeOutput(results);
 }
 
-// Scan decoded text for potentially dangerous commands
+// Check decoded text for potentially dangerous commands
 function checkForThreats(decodedText) {
+    const dangerousCommands = [
+        'Invoke-WebRequest', 'IWR', 'wget', 'curl',
+        'Invoke-Expression', 'IEX',
+        'DownloadString', 'DownloadFile',
+        'Start-Process',
+        'net user', 'net localgroup',
+        'reg add', 'reg delete',
+        'schtasks', 'wmic', 'certutil', 'bitsadmin',
+        'powershell', 'cmd.exe',
+        'rundll32', 'mshta',
+        'whoami', 'systeminfo'
+    ];
+    
     const warnings = [];
     const lowerText = decodedText.toLowerCase();
-
-    // Check against known dangerous command patterns
+    
     dangerousCommands.forEach(cmd => {
         if (lowerText.includes(cmd.toLowerCase())) {
-            warnings.push(`Found: <strong>${cmd}</strong>`);
+            warnings.push(`Found: ${escapeHtml(cmd)}`);
         }
     });
-
+    
     const warningsDiv = document.getElementById('decodeWarnings');
     if (warnings.length > 0) {
         warningsDiv.innerHTML = `
@@ -205,7 +306,7 @@ function checkForThreats(decodedText) {
                 ${warnings.join('<br>')}
                 <div style="margin-top: 12px; font-size: 0.9em;">
                     This decoded content contains commands often seen in malicious scripts.
-                    Proceed with extreme caution and verify the source before executing.
+                    Proceed with extreme caution.
                 </div>
             </div>
         `;
@@ -214,17 +315,16 @@ function checkForThreats(decodedText) {
     }
 }
 
-// Update the decode output display
+// Display functions
 function displayDecodeOutput(text) {
     document.getElementById('decodeOutputText').textContent = text;
 }
 
-// Update the encode output display
 function displayEncodeOutput(text) {
     document.getElementById('encodeOutputText').textContent = text;
 }
 
-// Copy output text to clipboard
+// Copy output to clipboard
 function copyOutput(type) {
     const textElement = type === 'decode' ? 
         document.getElementById('decodeOutputText') : 
@@ -235,11 +335,35 @@ function copyOutput(type) {
         const btn = event.target;
         const originalText = btn.textContent;
         btn.textContent = 'Copied!';
-        // Reset after 2 seconds
         setTimeout(() => {
             btn.textContent = originalText;
         }, 2000);
     }).catch(err => {
-        alert('Failed to copy: ' + err);
+        // Fallback for older browsers
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
     });
+}
+
+// Clear functions
+function clearDecode() {
+    document.getElementById('decodeInput').value = '';
+    document.getElementById('decodeOutputText').textContent = 'Your decoded text will show up here...';
+    document.getElementById('decodeWarnings').innerHTML = '';
+}
+
+function clearEncode() {
+    document.getElementById('encodeInput').value = '';
+    document.getElementById('encodeOutputText').textContent = 'Your encoded text will appear here...';
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }

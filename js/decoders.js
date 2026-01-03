@@ -19,3 +19,17 @@ function decodeHex(input) {
         .map(byte => String.fromCharCode(parseInt(byte, 16)))
         .join('');
 }
+
+// URL decoder - handles percent-encoded characters
+function decodeURL(input) {
+    return decodeURIComponent(input);
+}
+
+// ROT13 decoder - shifts each letter by 13 positions
+// Note: ROT13 is its own inverse (encoding = decoding)
+function decodeROT13(input) {
+    return input.replace(/[a-zA-Z]/g, function(c) {
+        const start = c <= 'Z' ? 65 : 97;
+        return String.fromCharCode(start + (c.charCodeAt(0) - start + 13) % 26);
+    });
+}

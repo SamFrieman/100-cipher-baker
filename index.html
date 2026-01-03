@@ -59,7 +59,7 @@
                 <div class="input-group">
                     <label> Decoded Output:</label>
                     <div class="output-box" id="decodeOutput">
-                        <button class="copy-btn" onclick="copyOutput('decode')">📋 Copy</button>
+                        <button class="copy-btn" onclick="copyOutput('decode')"> Copy</button>
                         <span id="decodeOutputText">Your decoded text will show up here...</span>
                     </div>
                 </div>
@@ -106,7 +106,7 @@
         </div>
         <!-- Quick examples section -->
         <div class="decoder-section">
-            <h2 style="margin-bottom: 20px; font-weight: 300;">📚 Quick Test Examples (Click to Load)</h2>
+            <h2 style="margin-bottom: 20px; font-weight: 300;">m  Quick Test Examples (Click to Load)</h2>
             <div class="examples">
                 <div class="example-item" onclick="loadExample(0)">
                     <div class="example-title">PowerShell Base64 Command</div>
@@ -126,3 +126,27 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Cipher reference guide -->
+        <div class="decoder-section">
+            <h2 style="margin-bottom: 20px; font-weight: 300;">🎯 Cipher Quick Reference</h2>
+            <p style="color: #888; margin-bottom: 20px;">Here's what each encoding method does:</p>
+            <div style="line-height: 2;">
+                <span class="cipher-badge">Base64</span> Standard encoding for binary-to-text (most common in attacks)<br>
+                <span class="cipher-badge">Hexadecimal</span> Converts each byte to two hex digits (0-9, A-F)<br>
+                <span class="cipher-badge">URL Encoding</span> Encodes special characters for URLs (%20 = space)<br>
+                <span class="cipher-badge">ROT13</span> Shifts letters by 13 positions (A→N, B→O)<br>
+                <span class="cipher-badge">Binary</span> Converts text to 1s and 0s (8 bits per character)<br>
+                <span class="cipher-badge">ASCII</span> Shows the decimal value of each character (A=65)<br>
+                <span class="cipher-badge">Morse Code</span> Classic dots and dashes (. = dit, - = dah)<br>
+                <span class="cipher-badge">Reverse</span> Simply reverses the string backwards<br>
+                <span class="cipher-badge">Caesar</span> Shifts all letters by 3 (A→D, B→E)<br>
+                <span class="cipher-badge">Atbash</span> Reverses the alphabet (A→Z, B→Y)<br>
+            </div>
+        </div>
+
+        <footer>
+            <p>Crafted by <a href="https://github.com/SamFrieman" class="github-link">Sam Frieman</a></p>
+            <p style="margin-top: 10px;"><a href="https://github.com/SamFrieman/Lotl-decoder" class="github-link">⭐ Star on GitHub</a></p>
+        </footer>
+    </div>

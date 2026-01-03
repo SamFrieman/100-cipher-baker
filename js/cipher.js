@@ -14,3 +14,23 @@ const CipherRegistry = {
         { id: 'base62', name: 'Base62', category: 'Base Encodings', bidirectional: true },
         { id: 'base45', name: 'Base45', category: 'Base Encodings', bidirectional: true },
         { id: 'base36', name: 'Base36', category: 'Base Encodings', bidirectional: true },
+
+            // URL and Web Encodings
+        { id: 'url', name: 'URL Encoding', category: 'Web Encodings', bidirectional: true },
+        { id: 'html', name: 'HTML Entities', category: 'Web Encodings', bidirectional: true },
+        { id: 'unicode', name: 'Unicode Escape', category: 'Web Encodings', bidirectional: true },
+        { id: 'punycode', name: 'Punycode', category: 'Web Encodings', bidirectional: true },
+        
+        // Binary and Numeric
+        { id: 'binary', name: 'Binary', category: 'Numeric', bidirectional: true },
+        { id: 'octal', name: 'Octal', category: 'Numeric', bidirectional: true },
+        { id: 'decimal', name: 'Decimal (ASCII)', category: 'Numeric', bidirectional: true },
+        { id: 'hex', name: 'Hexadecimal', category: 'Numeric', bidirectional: true },
+        
+        // ROT Ciphers (1-25)
+        ...Array.from({length: 25}, (_, i) => ({
+            id: `rot${i+1}`,
+            name: `ROT${i+1}`,
+            category: 'Substitution',
+            bidirectional: true
+        })),

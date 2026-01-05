@@ -16,13 +16,11 @@
         <div class="decoder-section">
             <div class="info">
                 <strong>About:</strong> Security analysts often encounter encoded malicious commands. 
-                This tool supports 100+ encoding methods used in real-world attacks. Encode your own data 
-                for testing or decode suspicious strings instantly.
+                This tool supports 100+ encoding methods used in real-world attacks.
             </div>
         </div>
 
         <div class="split-section">
-            <!-- Decode Section -->
             <div class="decoder-section">
                 <h2 class="section-title">Decode</h2>
                 
@@ -30,9 +28,7 @@
                     <label>Select Cipher Method:</label>
                     <div class="select-wrapper">
                         <input type="text" id="decodeSearch" class="cipher-search" placeholder="Search ciphers..." autocomplete="off">
-                        <select id="decodeCipher" size="8">
-                            <!-- Populated by JavaScript -->
-                        </select>
+                        <select id="decodeCipher" size="8"></select>
                     </div>
                 </div>
 
@@ -58,7 +54,6 @@
                 </div>
             </div>
 
-            <!-- Encode Section -->
             <div class="decoder-section">
                 <h2 class="section-title">Encode</h2>
                 
@@ -66,9 +61,7 @@
                     <label>Select Cipher Method:</label>
                     <div class="select-wrapper">
                         <input type="text" id="encodeSearch" class="cipher-search" placeholder="Search ciphers..." autocomplete="off">
-                        <select id="encodeCipher" size="8">
-                            <!-- Populated by JavaScript -->
-                        </select>
+                        <select id="encodeCipher" size="8"></select>
                     </div>
                 </div>
 
@@ -98,39 +91,17 @@
             <div class="examples">
                 <div class="example-item" onclick="loadExample(0)">
                     <div class="example-title">PowerShell Base64 Command</div>
-                    <div class="example-code">V3JpdGUtSG9zdCAiTWFsaWNpb3VzIGNvZGUgZGV0ZWN0ZWQi</div>
+                    <div class="example-code">V3JpdGUtSG9zdCAiTWFsaWNpb3VzIGNvZGUi</div>
                 </div>
                 <div class="example-item" onclick="loadExample(1)">
                     <div class="example-title">Hex Encoded Web Request</div>
-                    <div class="example-code">49 6e 76 6f 6b 65 2d 57 65 62 52 65 71 75 65 73 74</div>
+                    <div class="example-code">49 6e 76 6f 6b 65 2d 57 65 62</div>
                 </div>
-                <div class="example-item" onclick="loadExample(2)">
-                    <div class="example-title">URL Encoded CMD Payload</div>
-                    <div class="example-code">cmd.exe%20%2Fc%20%22whoami%22</div>
-                </div>
-                <div class="example-item" onclick="loadExample(3)">
-                    <div class="example-title">Binary Encoded Message</div>
-                    <div class="example-code">01001000 01100001 01100011 01101011</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="decoder-section">
-            <h2 style="margin-bottom: 20px; font-weight: 300;">Cipher Categories</h2>
-            <p style="color: #888; margin-bottom: 20px;">All 100+ supported cipher methods organized by category:</p>
-            <div style="line-height: 2;">
-                <span class="cipher-badge">Base Encodings</span> Base16, Base32, Base64, Base85, Base91, Base58<br>
-                <span class="cipher-badge">Character Substitution</span> ROT1-25, Caesar, Atbash, Affine, Vigenère<br>
-                <span class="cipher-badge">Binary & Numeric</span> Binary, Octal, Decimal, Hexadecimal, ASCII values<br>
-                <span class="cipher-badge">Modern Standards</span> URL, HTML entities, Unicode, UTF variants<br>
-                <span class="cipher-badge">Historical</span> Morse, Bacon, Polybius, Playfair, Railfence<br>
-                <span class="cipher-badge">Hashing</span> MD5, SHA families, RIPEMD, Whirlpool<br>
             </div>
         </div>
 
         <footer>
             <p>Crafted by <a href="https://github.com/SamFrieman" class="github-link">Sam Frieman</a></p>
-            <p style="margin-top: 10px;"><a href="https://github.com/SamFrieman/Lotl-decoder" class="github-link">View on GitHub</a></p>
         </footer>
     </div>
 

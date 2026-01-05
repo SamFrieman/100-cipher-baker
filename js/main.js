@@ -1,4 +1,4 @@
-// Main application logic initalizing and using all other javascript files
+// Main application logic
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {

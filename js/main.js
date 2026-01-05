@@ -1,4 +1,4 @@
-// Main application logic with search functionality and security
+// Main application logic initalizing and using all other javascript files
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {

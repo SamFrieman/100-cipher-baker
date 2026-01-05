@@ -238,4 +238,247 @@ const Ciphers = {
             return result;
         }
     },
+
+    // URL encoding
+    url: {
+        encode: (input) => encodeURIComponent(input),
+        decode: (input) => decodeURIComponent(input)
+    },
+    
+    // HTML entities
+    html: {
+        encode: (input) => {
+            return input.replace(/[&<>"']/g, char => {
+                const entities = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+                return entities[char];
+            });
+        },
+        decode: (input) => {
+            const textarea = document.createElement('textarea');
+            textarea.innerHTML = input;
+            return textarea.value;
+        }
+    },
+    
+    // Binary
+    binary: {
+        encode: (input) => {
+            return Array.from(input)
+                .map(c => c.charCodeAt(0).toString(2).padStart(8, '0'))
+                .join(' ');
+        },
+        decode: (input) => {
+            return input.replace(/[^01]/g, '')
+                .match(/.{1,8}/g)
+                .map(byte => String.fromCharCode(parseInt(byte, 2)))
+                .join('');
+        }
+    },
+    
+    // Octal
+    octal: {
+        encode: (input) => {
+            return Array.from(input)
+                .map(c => c.charCodeAt(0).toString(8).padStart(3, '0'))
+                .join(' ');
+        },
+        decode: (input) => {
+            return input.split(/\s+/)
+                .filter(n => n)
+                .map(n => String.fromCharCode(parseInt(n, 8)))
+                .join('');
+        }
+    },
+    
+    // Decimal (ASCII values)
+    decimal: {
+        encode: (input) => {
+            return Array.from(input)
+                .map(c => c.charCodeAt(0))
+                .join(' ');
+        },
+        decode: (input) => {
+            return input.split(/\D+/)
+                .filter(n => n)
+                .map(n => String.fromCharCode(parseInt(n)))
+                .join('');
+        }
+    },
+    
+    // Hexadecimal
+    hex: {
+        encode: (input) => {
+            return Array.from(input)
+                .map(c => c.charCodeAt(0).toString(16).padStart(2, '0'))
+                .join(' ');
+        },
+        decode: (input) => {
+            const clean = input.replace(/[^0-9A-Fa-f]/g, '');
+            return clean.match(/.{1,2}/g)
+                .map(byte => String.fromCharCode(parseInt(byte, 16)))
+                .join('');
+        }
+    },
+    
+    // ROT cipher generator (works for ROT1-25)
+    generateRot: (shift) => ({
+        encode: (input) => {
+            return input.replace(/[a-zA-Z]/g, char => {
+                const start = char <= 'Z' ? 65 : 97;
+                return String.fromCharCode(start + (char.charCodeAt(0) - start + shift) % 26);
+            });
+        },
+        decode: (input) => {
+            return input.replace(/[a-zA-Z]/g, char => {
+                const start = char <= 'Z' ? 65 : 97;
+                return String.fromCharCode(start + (char.charCodeAt(0) - start - shift + 26) % 26);
+            });
+        }
+    }),
+    
+    // Caesar cipher (ROT3)
+    caesar: {
+        encode: (input) => Ciphers.generateRot(3).encode(input),
+        decode: (input) => Ciphers.generateRot(3).decode(input)
+    },
+    
+    // Atbash cipher
+    atbash: {
+        encode: (input) => {
+            return input.replace(/[a-zA-Z]/g, char => {
+                const start = char <= 'Z' ? 65 : 97;
+                return String.fromCharCode(start + (25 - (char.charCodeAt(0) - start)));
+            });
+        },
+        decode: (input) => Ciphers.atbash.encode(input) // Atbash is its own inverse
+    },
+    
+    // Morse code
+    morse: {
+        encode: (input) => {
+            const table = {
+                'A':'.-','B':'-...','C':'-.-.','D':'-..','E':'.','F':'..-.','G':'--.','H':'....','I':'..','J':'.---',
+                'K':'-.-','L':'.-..','M':'--','N':'-.','O':'---','P':'.--.','Q':'--.-','R':'.-.','S':'...','T':'-',
+                'U':'..-','V':'...-','W':'.--','X':'-..-','Y':'-.--','Z':'--..','0':'-----','1':'.----','2':'..---',
+                '3':'...--','4':'....-','5':'.....','6':'-....','7':'--...','8':'---..','9':'----.','  ':' ':'/'
+            };
+            return input.toUpperCase().split('').map(c => table[c] || '?').join(' ');
+        },
+        decode: (input) => {
+            const table = {
+                '.-':'A','-...':'B','-.-.':'C','-..':'D','.':'E','..-.':'F','--.':'G','....':'H','..':'I','.---':'J',
+                '-.-':'K','.-..':'L','--':'M','-.':'N','---':'O','.--.':'P','--.-':'Q','.-.':'R','...':'S','-':'T',
+                '..-':'U','...-':'V','.--':'W','-..-':'X','-.--':'Y','--..':'Z','-----':'0','.----':'1','..---':'2',
+                '...--':'3','....-':'4','.....':'5','-....':'6','--...':'7','---..':'8','----.':'9','/':' '
+            };
+            return input.split(' ').map(c => table[c] || '?').join('');
+        }
+    },
+    
+    // Reverse string
+    reverse: {
+        encode: (input) => input.split('').reverse().join(''),
+        decode: (input) => input.split('').reverse().join('')
+    },
+    
+    // Rail Fence cipher
+    railfence: {
+        encode: (input, rails = 3) => {
+            if (rails < 2) return input;
+            const fence = Array.from({length: rails}, () => []);
+            let rail = 0;
+            let direction = 1;
+            
+            for (const char of input) {
+                fence[rail].push(char);
+                rail += direction;
+                if (rail === 0 || rail === rails - 1) direction *= -1;
+            }
+            
+            return fence.flat().join('');
+        },
+        decode: (input, rails = 3) => {
+            if (rails < 2) return input;
+            const fence = Array.from({length: rails}, () => []);
+            const pattern = [];
+            let rail = 0;
+            let direction = 1;
+            
+            // Build pattern
+            for (let i = 0; i < input.length; i++) {
+                pattern.push(rail);
+                rail += direction;
+                if (rail === 0 || rail === rails - 1) direction *= -1;
+            }
+            
+            // Fill fence
+            let index = 0;
+            for (let r = 0; r < rails; r++) {
+                for (let i = 0; i < pattern.length; i++) {
+                    if (pattern[i] === r) {
+                        fence[r].push(input[index++]);
+                    }
+                }
+            }
+            
+            // Read fence
+            let result = '';
+            rail = 0;
+            direction = 1;
+            for (let i = 0; i < input.length; i++) {
+                result += fence[rail].shift();
+                rail += direction;
+                if (rail === 0 || rail === rails - 1) direction *= -1;
+            }
+            
+            return result;
+        }
+    },
+    
+    // Unicode escape sequences
+    unicode: {
+        encode: (input) => {
+            return Array.from(input)
+                .map(c => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0'))
+                .join('');
+        },
+        decode: (input) => {
+            return input.replace(/\\u([0-9a-fA-F]{4})/g, (match, hex) => 
+                String.fromCharCode(parseInt(hex, 16))
+            );
+        }
+    },
+    
+    // Bacon cipher
+    bacon: {
+        encode: (input) => {
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const bacon = [
+                'AAAAA','AAAAB','AAABA','AAABB','AABAA','AABAB','AABBA','AABBB',
+                'ABAAA','ABAAB','ABABA','ABABB','ABBAA','ABBAB','ABBBA','ABBBB',
+                'BAAAA','BAAAB','BAABA','BAABB','BABAA','BABAB','BABBA','BBBAA',
+                'BBBAB','BBBBA'
+            ];
+            
+            return input.toUpperCase().split('').map(c => {
+                const index = alphabet.indexOf(c);
+                return index >= 0 ? bacon[index] : c;
+            }).join(' ');
+        },
+        decode: (input) => {
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const bacon = [
+                'AAAAA','AAAAB','AAABA','AAABB','AABAA','AABAB','AABBA','AABBB',
+                'ABAAA','ABAAB','ABABA','ABABB','ABBAA','ABBAB','ABBBA','ABBBB',
+                'BAAAA','BAAAB','BAABA','BAABB','BABAA','BABAB','BABBA','BBBAA',
+                'BBBAB','BBBBA'
+            ];
+            
+            return input.split(/\s+/).map(code => {
+                const index = bacon.indexOf(code.toUpperCase());
+                return index >= 0 ? alphabet[index] : '?';
+            }).join('');
+        }
+    }
+};
     

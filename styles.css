@@ -71,6 +71,48 @@ h1 {
 @media (max-width: 968px) {
     .split-section {
         grid-template-columns: 1fr;
+
+    h1 {
+        font-size: 2em;
+    }
+    
+    .tagline {
+        font-size: 0.95em;
+    }
+    
+    .decoder-section {
+        padding: 25px;
+    }
+    
+    header {
+        padding: 40px 0 30px 0;
+    }
+}
+
+/* New mobile-specific ruleset */
+@media (max-width: 640px) {
+    h1 {
+        font-size: 1.75em;
+    }
+    
+    .button-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    textarea {
+        min-height: 120px;
+        font-size: 13px;
+    }
+    
+    .examples {
+        grid-template-columns: 1fr;
+    }
+    
+    .toast {
+        bottom: 20px;
+        right: 20px;
+        left: 20px;
+        text-align: center;
     }
 }
 

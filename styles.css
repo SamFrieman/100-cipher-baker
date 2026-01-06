@@ -256,6 +256,7 @@ button:disabled:hover {
 
 /* Output box styling */
 .output-box {
+    padding-top: 50px;
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(0, 255, 65, 0.3);
     border-radius: 8px;
@@ -334,6 +335,31 @@ button:disabled:hover {
     font-size: 0.85em;
     cursor: pointer;
     transition: all 0.3s ease;
+}
+
+.output-controls {
+    display: flex;
+    gap: 8px;
+    position: absolute;
+    top: 15px;
+    right: 15px;
+}
+
+.output-controls button {
+    padding: 6px 12px;
+    font-size: 0.85em;
+    min-width: auto;
+}
+
+.output-box.wrap-text #decodeOutputText,
+.output-box.wrap-text #encodeOutputText {
+    word-break: break-word;
+}
+
+/* Format toggle button active state */
+.format-btn.active {
+    background: rgba(0, 255, 65, 0.3);
+    border-color: rgba(0, 255, 65, 0.8);
 }
 
 .copy-btn:hover {

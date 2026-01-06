@@ -239,37 +239,47 @@ function autoDetectDecode() {
 function performEncode() {
     const input = document.getElementById('encodeInput').value.trim();
     const cipherId = document.getElementById('encodeCipher').value;
+    const button = event.target;
     
     if (!input) {
         displayEncodeOutput('Please enter text to encode');
         return;
     }
-    
-    try {
-        // Security check
-        securityCheck(input, 'encode');
-        
-        // Sanitize input
-        const cleanInput = sanitizeInput(input);
-        
-        // Get cipher implementation
-        const cipher = Ciphers[cipherId];
-        if (!cipher || !cipher.encode) {
-            displayEncodeOutput('Cipher not supported');
-            return;
+
+    // Set loading state
+    setButtonLoading(button, true);
+
+    // Use setTimeout to allow UI to update
+    setTimeout(() => {
+        try {
+            // Security check
+            securityCheck(input, 'encode');
+            
+            // Sanitize input
+            const cleanInput = sanitizeInput(input);
+            
+            // Get cipher implementation
+            const cipher = Ciphers[cipherId];
+            if (!cipher || !cipher.encode) {
+                displayEncodeOutput('Cipher not supported');
+                return;
+            }
+            
+            // Perform encoding
+            const result = cipher.encode(cleanInput);
+            
+            // Sanitize and display output
+            const safeOutput = sanitizeOutput(result);
+            displayEncodeOutput(result, true);  // Added success param
+            
+        } catch (error) {
+            displayEncodeOutput('Encoding failed: ' + error.message);
+        } finally {
+            setButtonLoading(button, false); // Remove loading state
         }
-        
-        // Perform encoding
-        const result = cipher.encode(cleanInput);
-        
-        // Sanitize and display output
-        const safeOutput = sanitizeOutput(result);
-        displayEncodeOutput(result);
-        
-    } catch (error) {
-        displayEncodeOutput('Encoding failed: ' + error.message);
-    }
+    }, 50);
 }
+        
 
 // Encode with all available methods
 function encodeAll() {

@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     populateCipherSelects();
     setupSearchFunctionality();
     setupCharacterCounters();
+    setupKeyboardShortcuts();
 });
 
 // Populate both encode and decode cipher dropdowns
@@ -84,6 +85,37 @@ function setupCharacterCounters() {
     
     encodeInput.addEventListener('input', function() {
         updateCharCounter(this.value.length, encodeCounter);
+    });
+}
+
+function setupKeyboardShortcuts() {
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + Enter to decode (when in decode textarea)
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            const activeElement = document.activeElement;
+            
+            if (activeElement.id === 'decodeInput') {
+                e.preventDefault();
+                performDecode();
+            } else if (activeElement.id === 'encodeInput') {
+                e.preventDefault();
+                performEncode();
+            }
+        }
+        
+        // Ctrl/Cmd + Shift + D for auto-detect
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'D') {
+            e.preventDefault();
+            document.getElementById('decodeInput').focus();
+            autoDetectDecode();
+        }
+        
+        // Ctrl/Cmd + Shift + A for encode all
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'A') {
+            e.preventDefault();
+            document.getElementById('encodeInput').focus();
+            encodeAll();
+        }
     });
 }
 

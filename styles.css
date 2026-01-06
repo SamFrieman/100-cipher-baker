@@ -71,48 +71,6 @@ h1 {
 @media (max-width: 968px) {
     .split-section {
         grid-template-columns: 1fr;
-
-    h1 {
-        font-size: 2em;
-    }
-    
-    .tagline {
-        font-size: 0.95em;
-    }
-    
-    .decoder-section {
-        padding: 25px;
-    }
-    
-    header {
-        padding: 40px 0 30px 0;
-    }
-}
-
-/* New mobile-specific ruleset */
-@media (max-width: 640px) {
-    h1 {
-        font-size: 1.75em;
-    }
-    
-    .button-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    textarea {
-        min-height: 120px;
-        font-size: 13px;
-    }
-    
-    .examples {
-        grid-template-columns: 1fr;
-    }
-    
-    .toast {
-        bottom: 20px;
-        right: 20px;
-        left: 20px;
-        text-align: center;
     }
 }
 
@@ -126,19 +84,8 @@ h1 {
     gap: 10px;
 }
 
-/* Added character counter */
 .input-group {
     margin-bottom: 25px;
-    position: relative;
-}
-
-.char-counter {
-    position: absolute;
-    right: 10px;
-    bottom: -20px;
-    font-size: 0.75em;
-    color: #666;
-    font-family: 'Consolas', monospace;
 }
 
 label {
@@ -226,27 +173,9 @@ button:hover {
     transform: translateY(-2px);
 }
 
-/* Add these styles after the existing button:active rule */
-
 button:active {
     transform: translateY(0);
 }
-
-/* NEW: Disabled button states */
-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-}
-
-button:disabled:hover {
-    background: rgba(0, 255, 65, 0.1);
-    border-color: rgba(0, 255, 65, 0.4);
-    box-shadow: none;
-    transform: none;
-}
-
-
 
 /* Primary buttons get more emphasis */
 .primary-btn {
@@ -256,7 +185,6 @@ button:disabled:hover {
 
 /* Output box styling */
 .output-box {
-    padding-top: 50px;
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(0, 255, 65, 0.3);
     border-radius: 8px;
@@ -286,30 +214,6 @@ button:disabled:hover {
     margin-bottom: 10px;
 }
 
-.error-message {
-    background: rgba(255, 69, 0, 0.1);
-    border: 1px solid rgba(255, 69, 0, 0.4);
-    border-radius: 8px;
-    padding: 15px;
-    margin: 15px 0;
-    color: #ff6347;
-    font-size: 0.9em;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.error-message::before {
-    content: '⚠';
-    font-size: 1.5em;
-    flex-shrink: 0;
-}
-
-.output-box.error {
-    border-color: rgba(255, 69, 0, 0.6);
-    animation: fadeIn 0.3s ease;
-}
-
 /* Info box */
 .info {
     background: rgba(0, 191, 255, 0.08);
@@ -335,31 +239,6 @@ button:disabled:hover {
     font-size: 0.85em;
     cursor: pointer;
     transition: all 0.3s ease;
-}
-
-.output-controls {
-    display: flex;
-    gap: 8px;
-    position: absolute;
-    top: 15px;
-    right: 15px;
-}
-
-.output-controls button {
-    padding: 6px 12px;
-    font-size: 0.85em;
-    min-width: auto;
-}
-
-.output-box.wrap-text #decodeOutputText,
-.output-box.wrap-text #encodeOutputText {
-    word-break: break-word;
-}
-
-/* Format toggle button active state */
-.format-btn.active {
-    background: rgba(0, 255, 65, 0.3);
-    border-color: rgba(0, 255, 65, 0.8);
 }
 
 .copy-btn:hover {
@@ -464,99 +343,4 @@ footer {
 select {
     border-radius: 0 0 8px 8px;
     border-top: none;
-}
-/* A spinning animation for the loading phase */
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-.spinner {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    border: 2px solid rgba(0, 255, 65, 0.3);
-    border-top-color: #00ff41;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin-right: 8px;
-    vertical-align: middle;
-}
-
-/* Feedback for successful attempt */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.output-box.success {
-    animation: fadeIn 0.3s ease;
-    border-color: rgba(0, 255, 65, 0.6);
-}
-
-.success-badge {
-    display: inline-block;
-    background: rgba(0, 255, 65, 0.2);
-    color: #00ff41;
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 0.8em;
-    margin-left: 10px;
-    animation: fadeIn 0.3s ease;
-}
-
-.shortcut-hint {
-    display: inline-block;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(0, 255, 65, 0.2);
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 0.75em;
-    font-family: 'Consolas', monospace;
-    margin-left: 8px;
-    color: #888;
-}
-
-.button-with-hint {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-/* Toast notification */
-.toast {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    background: rgba(0, 255, 65, 0.95);
-    color: #0a0a0a;
-    padding: 15px 25px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.95em;
-    box-shadow: 0 8px 32px rgba(0, 255, 65, 0.4);
-    z-index: 1000;
-    animation: slideIn 0.3s ease, slideOut 0.3s ease 2.7s;
-    pointer-events: none;
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateX(400px);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-@keyframes slideOut {
-    from {
-        transform: translateX(0);
-        opacity: 1;
-    }
-    to {
-        transform: translateX(400px);
-        opacity: 0;
-    }
 }

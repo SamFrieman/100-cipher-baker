@@ -10,7 +10,7 @@
 // Central registry of all available ciphers
 const CipherRegistry = {
     ciphers: [
-        // Base Encodings (9 ciphers)
+        // Base Encodings (7 ciphers)
         { id: 'base64', name: 'Base64', category: 'Base Encodings', bidirectional: true },
         { id: 'base32', name: 'Base32', category: 'Base Encodings', bidirectional: true },
         { id: 'base16', name: 'Base16 (Hex)', category: 'Base Encodings', bidirectional: true },
@@ -19,7 +19,7 @@ const CipherRegistry = {
         { id: 'base62', name: 'Base62', category: 'Base Encodings', bidirectional: true },
         { id: 'base36', name: 'Base36', category: 'Base Encodings', bidirectional: true },
         
-        // URL and Web Encodings (4 ciphers)
+        // URL and Web Encodings (3 ciphers)
         { id: 'url', name: 'URL Encoding', category: 'Web Encodings', bidirectional: true },
         { id: 'html', name: 'HTML Entities', category: 'Web Encodings', bidirectional: true },
         { id: 'unicode', name: 'Unicode Escape', category: 'Web Encodings', bidirectional: true },
@@ -38,7 +38,7 @@ const CipherRegistry = {
             bidirectional: true
         })),
         
-        // Classic Ciphers (8 ciphers)
+        // Classic Ciphers (4 ciphers)
         { id: 'caesar', name: 'Caesar Cipher', category: 'Substitution', bidirectional: true },
         { id: 'atbash', name: 'Atbash', category: 'Substitution', bidirectional: true },
         { id: 'morse', name: 'Morse Code', category: 'Substitution', bidirectional: true },
@@ -66,6 +66,7 @@ const Ciphers = {
         encode: (input) => btoa(input),
         decode: (input) => {
             let clean = input.replace(/\s/g, '');
+            // Handle PowerShell -enc format
             if (input.toLowerCase().includes('-enc')) {
                 clean = input.split(/\s+/).pop();
             }
@@ -97,7 +98,7 @@ const Ciphers = {
         },
         decode: (input) => {
             const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-            input = input.toUpperCase().replace(/=+$/, '');
+            input = input.toUpperCase().replace(/=+$/, '').replace(/\s/g, '');
             let bits = '';
             
             for (let i = 0; i < input.length; i++) {
@@ -195,7 +196,7 @@ const Ciphers = {
             return '<~' + result + '~>';
         },
         decode: (input) => {
-            input = input.replace(/<~|~>/g, '');
+            input = input.replace(/<~|~>/g, '').replace(/\s/g, '');
             let result = '';
             
             for (let i = 0; i < input.length; i += 5) {
@@ -236,7 +237,7 @@ const Ciphers = {
             return result || '0';
         },
         decode: (input) => {
-            const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+            const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
             let num = BigInt(0);
             
             for (let i = 0; i < input.length; i++) {
@@ -419,7 +420,7 @@ const Ciphers = {
         }
     },
     
-    // Bacon cipher
+    // Bacon cipher - FIXED
     bacon: {
         encode: (input) => {
             const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -444,8 +445,14 @@ const Ciphers = {
                 'BBBAB','BBBBA'
             ];
             
-            return input.split(/\s+/).map(code => {
-                const index = bacon.indexOf(code.toUpperCase());
+            // Clean input - remove all non A/B characters and split into groups of 5
+            const clean = input.toUpperCase().replace(/[^AB]/g, '');
+            const groups = clean.match(/.{1,5}/g) || [];
+            
+            return groups.map(code => {
+                // Pad if less than 5 characters
+                const paddedCode = code.padEnd(5, 'A');
+                const index = bacon.indexOf(paddedCode);
                 return index >= 0 ? alphabet[index] : '?';
             }).join('');
         }
@@ -512,4 +519,50 @@ const Ciphers = {
 // Initialize all ROT ciphers (ROT1-25)
 for (let i = 1; i <= 25; i++) {
     Ciphers[`rot${i}`] = Ciphers.generateRot(i);
+}
+
+// Quality scoring function for auto-detect
+function scoreDecodedText(text) {
+    if (!text || text.length === 0) return 0;
+    
+    let score = 0;
+    
+    // Count readable ASCII characters (32-126)
+    const readableChars = text.split('').filter(c => {
+        const code = c.charCodeAt(0);
+        return code >= 32 && code <= 126;
+    }).length;
+    const readableRatio = readableChars / text.length;
+    score += readableRatio * 40;
+    
+    // Check for common English words
+    const commonWords = ['the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have', 'it', 'for', 'not', 'on', 'with', 'as', 'you', 'do', 'at'];
+    const lowerText = text.toLowerCase();
+    const wordMatches = commonWords.filter(word => lowerText.includes(word)).length;
+    score += wordMatches * 5;
+    
+    // Check for spaces (natural language indicator)
+    const spaceRatio = (text.match(/ /g) || []).length / text.length;
+    if (spaceRatio > 0.1 && spaceRatio < 0.3) {
+        score += 20;
+    }
+    
+    // Check for common punctuation
+    if (/[.,!?;:]/.test(text)) {
+        score += 10;
+    }
+    
+    // Penalize if too many special characters
+    const specialChars = (text.match(/[^a-zA-Z0-9\s.,!?;:'"()\-]/g) || []).length;
+    const specialRatio = specialChars / text.length;
+    if (specialRatio > 0.3) {
+        score -= 20;
+    }
+    
+    // Check for camelCase or command patterns (PowerShell, etc)
+    if (/[a-z][A-Z]/.test(text) || /Invoke-|Get-|Set-|New-/.test(text)) {
+        score += 15;
+    }
+    
+    return Math.max(0, score);
 }
